@@ -12,8 +12,6 @@ internal static class SubRoot_Start_Patch
         if (__instance.GetComponent<CyclopsScannerController>() == null)
         {
             __instance.gameObject.AddComponent<CyclopsScannerController>();
-            // TEMP DEBUG (remove in step 6): confirm the controller actually attaches.
-            Plugin.Logger.LogInfo("[Scanner] Controller attached to Cyclops.");
         }
     }
 }

@@ -7,7 +7,7 @@ namespace CyclopsScannerModule.Behaviours;
 
 /// <summary>
 /// Per-Cyclops controller. Attached to the Cyclops root GameObject (alongside <see cref="SubRoot"/>)
-/// by <see cref="Patches.SubRootPatches"/>. Tracks whether a Cyclops Scanner Module is installed,
+/// by <see cref="Patches.SubRoot_Start_Patch"/>. Tracks whether a Cyclops Scanner Module is installed,
 /// what resource the player has selected to scan for, and drains power while actively scanning.
 /// </summary>
 public class CyclopsScannerController : MonoBehaviour
@@ -67,7 +67,6 @@ public class CyclopsScannerController : MonoBehaviour
             && _sub.upgradeConsole.modules.GetCount(ScannerModuleItem.Info.TechType) > 0;
         if (ModuleInstalled && !installed)
         {
-            Plugin.Logger.LogDebug("[Scanner] Module removed from Cyclops.");
             ForceBlipRefresh();
         }
         ModuleInstalled = installed;
@@ -83,21 +82,6 @@ public class CyclopsScannerController : MonoBehaviour
             UI.ScannerMenu.Toggle(this);
         }
 
-        // TEMP DEBUG (remove in step 6): L toggles scanning Titanium for quick in-game blip testing,
-        // with on-screen state dump so failures are diagnosable without log files.
-        if (Input.GetKeyDown(KeyCode.L)
-            && Player.main != null && Player.main.currentSub == _sub)
-        {
-            ErrorMessage.AddMessage(
-                $"[Scanner] installed={ModuleInstalled} active={ScanActive} type={SelectedType} paused={PowerPaused} console={(_sub.upgradeConsole != null)}");
-            if (ModuleInstalled)
-            {
-                if (ScanActive) StopScanning();
-                else StartScanning(TechType.Titanium);
-                ErrorMessage.AddMessage($"[Scanner] now active={ScanActive} type={SelectedType}");
-            }
-        }
-
         // 3. Power drain.
         if (ModuleInstalled && ScanActive && SelectedType != TechType.None
             && _sub.live != null && _sub.live.IsAlive())
@@ -111,7 +95,6 @@ public class CyclopsScannerController : MonoBehaviour
                 if (_sub.powerRelay != null && _sub.powerRelay.GetPower() >= ResumePowerThreshold)
                 {
                     PowerPaused = false;
-                    Plugin.Logger.LogDebug("[Scanner] Power resumed; scan unpaused.");
                     ForceBlipRefresh();
                 }
             }
@@ -121,7 +104,6 @@ public class CyclopsScannerController : MonoBehaviour
                 if (!PowerSystem.ConsumeEnergy(_sub.powerRelay, amount, out _))
                 {
                     PowerPaused = true;
-                    Plugin.Logger.LogDebug("[Scanner] Out of power; scan paused.");
                     ForceBlipRefresh();
                 }
             }
@@ -133,14 +115,12 @@ public class CyclopsScannerController : MonoBehaviour
         SelectedType = techType;
         ScanActive = techType != TechType.None;
         PowerPaused = false;
-        Plugin.Logger.LogDebug($"[Scanner] StartScanning: {techType}");
         ForceBlipRefresh();
     }
 
     public void StopScanning()
     {
         ScanActive = false;
-        Plugin.Logger.LogDebug("[Scanner] StopScanning");
         ForceBlipRefresh();
     }
 

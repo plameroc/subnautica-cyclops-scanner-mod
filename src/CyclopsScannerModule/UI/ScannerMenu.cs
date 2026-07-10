@@ -87,8 +87,9 @@ public class ScannerMenu : MonoBehaviour
 
     private void Update()
     {
-        if (!IsOpen) return;
+        if (ReferenceEquals(_owner, null)) return; // menu closed
 
+        // _owner == null here means Unity-destroyed (overloaded check): close properly.
         if (_owner == null
             || Player.main == null || Player.main.currentSub != _owner.Sub
             || !_owner.ModuleInstalled
