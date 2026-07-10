@@ -1,0 +1,29 @@
+# Build artifacts
+[Bb]in/
+[Oo]bj/
+*.dll
+*.pdb
+
+# User-specific / machine-specific files (e.g. local Subnautica install path)
+*.user
+*.csproj.user
+Directory.Build.props.local
+
+# IDE
+.vs/
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.userosscache
+*.sln.docstates
+.idea/
+*.DotSettings.user
+
+# OS
+Thumbs.db
+.DS_Store
+
+# NuGet
+*.nupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/

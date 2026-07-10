@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+	<AssemblyName>CyclopsScannerModule</AssemblyName>
+    <Version>1.0.0</Version>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>11</LangVersion>
+	<RootNamespace>CyclopsScannerModule</RootNamespace>
+
+    <BepInExPluginGuid>com.plameroc.cyclopsscannermodule</BepInExPluginGuid>
+    <BepInExPluginName>Cyclops Scanner Module</BepInExPluginName>
+    <BepInExPluginVersion>$(Version)</BepInExPluginVersion>
+
+    <RestoreAdditionalProjectSources>
+      https://api.nuget.org/v3/index.json;
+      https://nuget.bepinex.dev/v3/index.json;
+    </RestoreAdditionalProjectSources>
+  </PropertyGroup>
+
+  <!-- Local machine settings (e.g. game install path for post-build deploy) live in
+       CyclopsScannerModule.csproj.user, which is gitignored and auto-imported by the SDK.
+       See README for setup. -->
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.Core" Version="5.4.21" />
+    <PackageReference Include="BepInEx.PluginInfoProps" Version="1.1.0" />
+    <PackageReference Include="UnityEngine.Modules" Version="2019.4.36" IncludeAssets="compile" />
+    <PackageReference Include="Unity.InputSystem" Version="1.4.1" IncludeAssets="compile" />
+    <PackageReference Include="Subnautica.GameLibs" Version="82304.0.0-r.0" />
+    <PackageReference Include="PolySharp" Version="1.15.0" />
+    <PackageReference Include="Subnautica.Nautilus" Version="1.*-*" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Copies the built plugin into the local Subnautica install for testing.
+       Requires SubnauticaGameDir to be set in CyclopsScannerModule.csproj.user. -->
+  <Target Name="DeployToGame" AfterTargets="Build" Condition="'$(SubnauticaGameDir)' != ''">
+    <ItemGroup>
+      <DeployFiles Include="$(TargetDir)$(AssemblyName).dll" />
+      <DeployFiles Include="$(TargetDir)$(AssemblyName).pdb" Condition="Exists('$(TargetDir)$(AssemblyName).pdb')" />
+    </ItemGroup>
+    <MakeDir Directories="$(SubnauticaGameDir)\BepInEx\plugins\$(AssemblyName)" />
+    <Copy SourceFiles="@(DeployFiles)" DestinationFolder="$(SubnauticaGameDir)\BepInEx\plugins\$(AssemblyName)" />
+  </Target>
+</Project>
