@@ -73,6 +73,15 @@ public class CyclopsScannerController : MonoBehaviour
             // TODO(step 4): open ScannerMenu
         }
 
+        // TEMP DEBUG (remove in step 6): L toggles scanning Titanium for quick in-game blip testing.
+        if (Input.GetKeyDown(KeyCode.L)
+            && Player.main != null && Player.main.currentSub == _sub
+            && ModuleInstalled)
+        {
+            if (ScanActive) StopScanning();
+            else StartScanning(TechType.Titanium);
+        }
+
         // 3. Power drain.
         if (ModuleInstalled && ScanActive && SelectedType != TechType.None
             && _sub.live != null && _sub.live.IsAlive())
