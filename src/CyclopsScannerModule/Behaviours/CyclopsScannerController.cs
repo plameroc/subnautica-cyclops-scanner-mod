@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using CyclopsScannerModule.Items;
+using CyclopsScannerModule.SaveData;
 using UnityEngine;
 
 namespace CyclopsScannerModule.Behaviours;
@@ -47,6 +48,16 @@ public class CyclopsScannerController : MonoBehaviour
     private void OnDisable()
     {
         All.Remove(this);
+    }
+
+    private void Start()
+    {
+        RestoreFromSave();
+    }
+
+    private void OnDestroy()
+    {
+        WriteToSave();
     }
 
     private void Update()
@@ -130,6 +141,38 @@ public class CyclopsScannerController : MonoBehaviour
     {
         ScanActive = false;
         Plugin.Logger.LogDebug("[Scanner] StopScanning");
+        ForceBlipRefresh();
+    }
+
+    /// <summary>Writes this sub's scanner state into the save cache (called on save and on destroy).</summary>
+    internal void WriteToSave()
+    {
+        string id = PrefabId;
+        if (id == null || Plugin.SaveState == null)
+            return;
+        Plugin.SaveState.Subs[id] = new SubScannerState
+        {
+            SelectedTechType = SelectedType.AsString(),
+            ScanActive = ScanActive,
+        };
+    }
+
+    /// <summary>Applies persisted state for this sub, if any. Safe to call more than once.</summary>
+    internal void RestoreFromSave()
+    {
+        string id = PrefabId;
+        if (id == null || Plugin.SaveState == null)
+            return;
+        if (!Plugin.SaveState.Subs.TryGetValue(id, out var state) || state == null)
+            return;
+
+        TechType techType = TechType.None;
+        if (!string.IsNullOrEmpty(state.SelectedTechType))
+            System.Enum.TryParse(state.SelectedTechType, true, out techType);
+
+        SelectedType = techType;
+        ScanActive = state.ScanActive && techType != TechType.None;
+        PowerPaused = false; // drain loop re-pauses next frame if power is still short
         ForceBlipRefresh();
     }
 
