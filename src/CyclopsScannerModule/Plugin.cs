@@ -28,6 +28,9 @@ public class Plugin : BaseUnityPlugin
         // register custom items
         ScannerModuleItem.Register();
 
+        // Menu host component; lives on BepInEx's DontDestroyOnLoad manager object.
+        gameObject.AddComponent<UI.ScannerMenu>();
+
         // register harmony patches, if there are any
         Harmony.CreateAndPatchAll(Assembly, $"{PluginInfo.PLUGIN_GUID}");
         Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");

@@ -61,7 +61,7 @@ public class CyclopsScannerController : MonoBehaviour
         }
         ModuleInstalled = installed;
 
-        // 2. Keybind (menu wiring comes in a later step).
+        // 2. Keybind: toggle the resource-selection menu.
         if (Input.GetKeyDown(Plugin.MenuKey.Value)
             && Player.main != null && Player.main.currentSub == _sub
             && ModuleInstalled
@@ -69,8 +69,7 @@ public class CyclopsScannerController : MonoBehaviour
             && AvatarInputHandler.main != null && AvatarInputHandler.main.IsEnabled()
             && Time.timeScale > 0f)
         {
-            Plugin.Logger.LogDebug("[Scanner] Menu key pressed (menu not yet implemented)");
-            // TODO(step 4): open ScannerMenu
+            UI.ScannerMenu.Toggle(this);
         }
 
         // TEMP DEBUG (remove in step 6): L toggles scanning Titanium for quick in-game blip testing,
