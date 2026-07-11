@@ -19,6 +19,7 @@ public class ScannerMenu : MonoBehaviour
     private const float WindowWidth = 320f;
     private const float WindowHeight = 400f;
     private const int WindowId = 0x5CA77E12;
+    private const float ApproxRowHeight = 22f;
 
     public static ScannerMenu Instance { get; private set; }
 
@@ -27,8 +28,12 @@ public class ScannerMenu : MonoBehaviour
     private Vector2 _scrollPos;
     private readonly List<(TechType Type, string Name)> _entries = new();
     private float _refreshTimer;
+    private int _focusIndex;
 
     private bool IsOpen => _owner != null;
+
+    // Flat focus index space: resource rows first, then Stop scanning, then Close.
+    private int FocusableCount => _entries.Count + 2; // resource rows + Stop + Close
 
     private void Awake()
     {
@@ -66,6 +71,7 @@ public class ScannerMenu : MonoBehaviour
             // Menu is already open for a different Cyclops; switch context in place.
             _owner = owner;
             _refreshTimer = 0f;
+            _focusIndex = 0;
             RefreshList();
         }
         else
@@ -80,6 +86,7 @@ public class ScannerMenu : MonoBehaviour
         _windowRect = new Rect((Screen.width - WindowWidth) / 2f, (Screen.height - WindowHeight) / 2f, WindowWidth, WindowHeight);
         _scrollPos = Vector2.zero;
         _refreshTimer = 0f;
+        _focusIndex = 0;
         RefreshList();
     }
 
@@ -114,6 +121,39 @@ public class ScannerMenu : MonoBehaviour
             _refreshTimer = 0f;
             RefreshList();
         }
+
+        // Controller/keyboard focus navigation. UIUp/UIDown/UISubmit are bound to both keyboard
+        // (arrows/enter) and gamepad (d-pad/A) by the game, so this works on a Steam Deck with no
+        // configuration. "Close" is a focusable item, so we never use UICancel (which can also open
+        // the pause menu). The mouse path in DrawWindow keeps working independently.
+        int count = FocusableCount;
+        _focusIndex = Mathf.Clamp(_focusIndex, 0, count - 1); // list size may have changed on refresh
+
+        if (GameInput.GetButtonDown(GameInput.Button.UIDown))
+            _focusIndex = (_focusIndex + 1) % count;
+        else if (GameInput.GetButtonDown(GameInput.Button.UIUp))
+            _focusIndex = (_focusIndex - 1 + count) % count;
+
+        if (GameInput.GetButtonDown(GameInput.Button.UISubmit))
+        {
+            ActivateFocused();
+            return; // ActivateFocused may have called Close()
+        }
+
+        // Keep the focused resource row roughly visible in the scroll view.
+        if (_focusIndex < _entries.Count)
+            _scrollPos.y = Mathf.Max(0f, _focusIndex * ApproxRowHeight - WindowHeight * 0.4f);
+    }
+
+    private void ActivateFocused()
+    {
+        if (_owner == null) return;
+        if (_focusIndex < _entries.Count)
+            _owner.StartScanning(_entries[_focusIndex].Type);
+        else if (_focusIndex == _entries.Count)
+            _owner.StopScanning();
+        else
+            Close();
     }
 
     private void RefreshList()
@@ -143,6 +183,16 @@ public class ScannerMenu : MonoBehaviour
             GUILayout.Width(WindowWidth), GUILayout.Height(WindowHeight));
     }
 
+    private bool FocusButton(string label, int index)
+    {
+        Color prev = GUI.backgroundColor;
+        if (index == _focusIndex)
+            GUI.backgroundColor = new Color(0.35f, 0.75f, 1f); // focus highlight
+        bool clicked = GUILayout.Button(label);
+        GUI.backgroundColor = prev;
+        return clicked;
+    }
+
     private void DrawWindow(int id)
     {
         string status;
@@ -161,19 +211,20 @@ public class ScannerMenu : MonoBehaviour
         else
         {
             _scrollPos = GUILayout.BeginScrollView(_scrollPos, GUILayout.ExpandHeight(true));
-            foreach (var entry in _entries)
+            for (int i = 0; i < _entries.Count; i++)
             {
+                var entry = _entries[i];
                 string label = entry.Type == _owner.SelectedType ? "► " + entry.Name : entry.Name;
-                if (GUILayout.Button(label))
+                if (FocusButton(label, i))
                     _owner.StartScanning(entry.Type);
             }
             GUILayout.EndScrollView();
         }
 
         GUILayout.BeginHorizontal();
-        if (GUILayout.Button("Stop scanning"))
+        if (FocusButton("Stop scanning", _entries.Count))
             _owner.StopScanning();
-        if (GUILayout.Button("Close"))
+        if (FocusButton("Close", _entries.Count + 1))
             Close();
         GUILayout.EndHorizontal();
 
