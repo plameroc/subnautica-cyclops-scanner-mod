@@ -89,6 +89,7 @@ public class ScannerMenu : MonoBehaviour
         _scrollPos = Vector2.zero;
         _refreshTimer = 0f;
         _focusIndex = 0;
+        SetPlayerMovementEnabled(false); // modal: freeze walking so the stick only drives the menu
         RefreshList();
     }
 
@@ -97,7 +98,19 @@ public class ScannerMenu : MonoBehaviour
         _owner = null;
         _entries.Clear();
         _scrollPos = Vector2.zero;
+        SetPlayerMovementEnabled(true);
         UWE.Utils.lockCursor = true;
+    }
+
+    // Gates locomotion via PlayerController.inputEnabled (read by PlayerMotor.Update). Unlike
+    // PlayerController.SetEnabled this keeps the motor running, so the player still tracks the sub
+    // and gravity — it just ignores movement input. Restoring true is always safe: the menu can
+    // only open during normal gameplay (where it's true), and teleport/death close the menu.
+    private static void SetPlayerMovementEnabled(bool enabled)
+    {
+        var pc = Player.main != null ? Player.main.playerController : null;
+        if (pc != null)
+            pc.inputEnabled = enabled;
     }
 
     private void Update()
