@@ -1,0 +1,8 @@
+# Normalize line endings in the repo; check out platform-appropriate by default.
+* text=auto
+
+# Windows-authored project files: keep CRLF explicitly so behavior doesn't depend
+# on each contributor's core.autocrlf setting.
+*.cs text eol=crlf
+*.csproj text eol=crlf
+*.sln text eol=crlf

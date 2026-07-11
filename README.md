@@ -88,6 +88,8 @@ dotnet build -c Release
     node, unlock, equipment type)
   - `Behaviours/CyclopsScannerController.cs` — per-Cyclops state machine: module detection,
     menu keybind, power drain, scan state
+  - `Behaviours/ScannerHandTarget.cs` — in-world interaction box that opens the menu on look +
+    interact (controller/Steam Deck friendly, no keybind)
   - `Patches/SubRootPatches.cs` — attaches the controller to every Cyclops
   - `Patches/ResourceTrackerPatches.cs` — feeds our scan results into the vanilla HUD blip system
   - `UI/ScannerMenu.cs` — the resource-selection panel (IMGUI)
