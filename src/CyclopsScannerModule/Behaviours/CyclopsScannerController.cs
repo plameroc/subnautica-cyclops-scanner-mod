@@ -18,8 +18,13 @@ public class CyclopsScannerController : MonoBehaviour
     public const float DrainPerMinute = 12f; // flat 12 energy/min — intentionally NOT scaled by max power
     private const float ResumePowerThreshold = 12f; // one minute's worth; hysteresis so it doesn't flicker
 
+    // Tunable placement — final values set during in-game placement session (step: placement).
+    private static readonly Vector3 InteractLocalPosition = new Vector3(0f, 1.4f, 0f);
+    private static readonly Vector3 InteractBoxSize = new Vector3(0.6f, 0.6f, 0.4f);
+
     private SubRoot _sub;
     private PrefabIdentifier _prefabId;
+    private GameObject _handTarget;
     private static uGUI_ResourceTracker _tracker; // cached lazily
 
     public SubRoot Sub => _sub;
@@ -38,6 +43,21 @@ public class CyclopsScannerController : MonoBehaviour
         _prefabId = GetComponent<PrefabIdentifier>() ?? GetComponentInParent<PrefabIdentifier>();
         if (_prefabId == null)
             Plugin.Logger.LogWarning("[Scanner] CyclopsScannerController.Awake: no PrefabIdentifier found on or above this GameObject.");
+        CreateHandTarget();
+    }
+
+    private void CreateHandTarget()
+    {
+        _handTarget = new GameObject("CyclopsScannerInteract");
+        _handTarget.transform.SetParent(transform, false);
+        _handTarget.transform.localPosition = InteractLocalPosition;
+        _handTarget.transform.localRotation = Quaternion.identity;
+        _handTarget.layer = 0; // Default layer — detected by the reticle raycast mask (~Trigger,~OnlyVehicle)
+        var box = _handTarget.AddComponent<BoxCollider>();
+        box.isTrigger = true; // trigger => doesn't block player movement, still hit by reticle (QueryTriggerInteraction.Collide)
+        box.size = InteractBoxSize;
+        var ht = _handTarget.AddComponent<ScannerHandTarget>();
+        ht.Owner = this;
     }
 
     private void OnEnable()
@@ -87,6 +107,22 @@ public class CyclopsScannerController : MonoBehaviour
                 && Time.timeScale > 0f)
             {
                 UI.ScannerMenu.Toggle(this);
+            }
+        }
+
+        // TEMP (remove after placement): press Semicolon while inside this sub to log the local-space
+        // point the camera is looking at (up to 5m away) and snap the hand target there for a quick
+        // visual check. Used to find good InteractLocalPosition/InteractBoxSize values in-game.
+        if (Input.GetKeyDown(KeyCode.Semicolon)
+            && Player.main != null && Player.main.currentSub == _sub)
+        {
+            var cam = MainCamera.camera;
+            if (cam != null && Physics.Raycast(cam.transform.position, cam.transform.forward, out RaycastHit hit, 5f))
+            {
+                Vector3 local = transform.InverseTransformPoint(hit.point);
+                ErrorMessage.AddMessage($"[Scanner placement] localPos = ({local.x:F3}, {local.y:F3}, {local.z:F3})");
+                if (_handTarget != null) _handTarget.transform.localPosition = local;
+                ErrorMessage.AddMessage("[Scanner placement] box moved — look at it to confirm the prompt appears");
             }
         }
 
