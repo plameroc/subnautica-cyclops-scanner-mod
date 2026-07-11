@@ -24,10 +24,20 @@ modding API.
   selectable item. Mouse and clicks still work in parallel.
 - **HUD blips**: detected resources appear on your HUD through the game's own scanner-room blip
   system — you need the **Scanner Room HUD Chip** equipped to see them, exactly like a scanner
-  room. No holographic map; scan range is 300m around the sub. While actively scanning, the blip
-  list refreshes every **2 seconds** (vanilla scanner rooms only refresh every 10s on their own
-  timer; this mod forces a tighter cadence so blips keep up as the Cyclops moves) — resources
-  that fall out of range are cleared on the same cadence.
+  room. No holographic map; scan range is 300m around the sub (the same base range as a vanilla
+  scanner room). Every matching resource within range appears **immediately** — there is no
+  gradual scanner-room-style reveal. While actively scanning, the blip list refreshes every
+  **2 seconds** (vanilla scanner rooms only refresh every 10s on their own timer; this mod forces
+  a tighter cadence so blips keep up as the Cyclops moves), and resources that fall out of range
+  are cleared on the same cadence.
+- **The one limitation — terrain streaming**: the game can only report a resource once the chunk
+  of world it sits in has finished loading into memory. This is a base-game engine constraint that
+  applies identically to real scanner rooms — nothing the mod (or any mod) can push past, since an
+  unloaded resource simply doesn't exist to be found. In practice: park the Cyclops and blips fill
+  in toward the full 300m as nearby chunks finish loading; drive it hard and blips appear closer
+  than 300m and "fill in" as you approach, because you're outrunning the loader into fresh terrain.
+  Everything already loaded within range is always shown instantly — the delay you may notice is
+  chunks loading, not the scan itself.
 - **Power**: drains a flat **12 energy per minute** from the Cyclops while actively scanning
   (1%/min of a standard 6x Power Cell loadout — deliberately not scaled by ion/upgraded cells).
   When the sub runs dry, scanning pauses and auto-resumes once power recovers. No drain in
