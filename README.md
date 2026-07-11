@@ -6,11 +6,35 @@ resource scanning/pinging functionality to the Cyclops as an equippable upgrade 
 Built on [Nautilus](https://github.com/SubnauticaModding/Nautilus), the community Subnautica
 modding API.
 
-## Status
+## Features
 
-Workspace scaffold only — no gameplay features implemented yet.
+- **Cyclops Scanner Module** — a new Cyclops upgrade, craftable at the upgrade fabricator inside
+  the Cyclops engine room. Fits any standard Cyclops upgrade slot.
+- **Blueprint unlock**: unlocks together with the Scanner Room blueprint.
+- **Recipe**: 1x Computer Chip, 2x Magnetite, 1x Copper Wire.
+- **Resource selection menu**: press <kbd>K</kbd> (rebindable) while inside a Cyclops with the
+  module installed to open a panel listing every trackable resource type within range. Click one
+  to start scanning; blips update as you cruise into newly loaded terrain. Press <kbd>K</kbd>
+  again (or Close) to dismiss.
+- **HUD blips**: detected resources appear on your HUD through the game's own scanner-room blip
+  system — you need the **Scanner Room HUD Chip** equipped to see them, exactly like a scanner
+  room. No holographic map; scan range is 300m around the sub.
+- **Power**: drains a flat **12 energy per minute** from the Cyclops while actively scanning
+  (1%/min of a standard 6x Power Cell loadout — deliberately not scaled by ion/upgraded cells).
+  When the sub runs dry, scanning pauses and auto-resumes once power recovers. No drain in
+  Creative mode.
+- **Persistence**: each Cyclops remembers its own selection and scanning state across save/load.
+  Multiple Cyclops operate independently.
 
-## Prerequisites
+## Installing (players)
+
+1. Install [BepInEx for Subnautica](https://github.com/toebeann/BepInEx.Subnautica) and
+   [Nautilus](https://github.com/SubnauticaModding/Nautilus/releases) (see runtime note below).
+2. Drop `CyclopsScannerModule.dll` into `Subnautica\BepInEx\plugins\CyclopsScannerModule\`.
+3. The menu key can be rebound in `BepInEx\config\com.plameroc.cyclopsscannermodule.cfg`
+   (created after first launch).
+
+## Prerequisites (building from source)
 
 - [.NET SDK](https://dotnet.microsoft.com/download) 8.0+
 - Subnautica (original, not Below Zero) with [BepInEx](https://github.com/toebeann/BepInEx.Subnautica)
@@ -43,10 +67,25 @@ create `src/CyclopsScannerModule/CyclopsScannerModule.csproj.user` (gitignored, 
 The built `CyclopsScannerModule.dll` will be copied to `BepInEx\plugins\CyclopsScannerModule\` under
 that directory after every build.
 
+For a distributable DLL, build the Release configuration; the output lands in
+`src/CyclopsScannerModule/bin/Release/net472/CyclopsScannerModule.dll`:
+
+```powershell
+dotnet build -c Release
+```
+
 ## Project layout
 
 - `src/CyclopsScannerModule/` — the mod project
-  - `Plugin.cs` — BepInEx plugin entry point
+  - `Plugin.cs` — BepInEx plugin entry point: config binding, item/save registration, Harmony
+  - `Items/ScannerModuleItem.cs` — Nautilus registration of the upgrade module (recipe, craft
+    node, unlock, equipment type)
+  - `Behaviours/CyclopsScannerController.cs` — per-Cyclops state machine: module detection,
+    menu keybind, power drain, scan state
+  - `Patches/SubRootPatches.cs` — attaches the controller to every Cyclops
+  - `Patches/ResourceTrackerPatches.cs` — feeds our scan results into the vanilla HUD blip system
+  - `UI/ScannerMenu.cs` — the resource-selection panel (IMGUI)
+  - `SaveData/ScannerSaveData.cs` — per-save-slot persistence via Nautilus
 - `CyclopsScannerModule.sln` — solution file
 
 ## License
