@@ -17,7 +17,7 @@ modding API.
   either way:
   - Press <kbd>K</kbd> (rebindable) while inside a Cyclops with the module installed.
   - Look at the wall panel **opposite the upgrade console** in the engine room (aimed at the small
-    yellow rectangle) and press the interact button — controller / Steam Deck friendly, no keybind
+    yellow triangle) and press the interact button — controller / Steam Deck friendly, no keybind
     needed.
 - **Controller & Steam Deck support**: the menu is fully navigable without a mouse — d-pad or arrow
   keys move the highlight, A / <kbd>Enter</kbd> selects, and "Close" is a selectable item. Mouse
