@@ -71,15 +71,23 @@ public class CyclopsScannerController : MonoBehaviour
         }
         ModuleInstalled = installed;
 
-        // 2. Keybind: toggle the resource-selection menu.
+        // 2. Keybind: toggle the resource-selection menu. Closing uses relaxed guards: the open
+        // menu unlocks the cursor, which disables AvatarInputHandler, so the open-guards below
+        // can never pass while the menu is up and the same key couldn't close it.
         if (Input.GetKeyDown(Plugin.MenuKey.Value)
-            && Player.main != null && Player.main.currentSub == _sub
-            && ModuleInstalled
-            && !Player.main.GetPDA().isInUse
-            && AvatarInputHandler.main != null && AvatarInputHandler.main.IsEnabled()
-            && Time.timeScale > 0f)
+            && Player.main != null && Player.main.currentSub == _sub)
         {
-            UI.ScannerMenu.Toggle(this);
+            if (UI.ScannerMenu.IsOpenFor(this))
+            {
+                UI.ScannerMenu.Toggle(this);
+            }
+            else if (ModuleInstalled
+                && !Player.main.GetPDA().isInUse
+                && AvatarInputHandler.main != null && AvatarInputHandler.main.IsEnabled()
+                && Time.timeScale > 0f)
+            {
+                UI.ScannerMenu.Toggle(this);
+            }
         }
 
         // 3. Power drain.

@@ -35,6 +35,12 @@ public class ScannerMenu : MonoBehaviour
         Instance = this;
     }
 
+    /// <summary>True if the menu is currently open for <paramref name="owner"/>.</summary>
+    public static bool IsOpenFor(CyclopsScannerController owner)
+    {
+        return Instance != null && Instance._owner == owner;
+    }
+
     /// <summary>
     /// Opens the menu for <paramref name="owner"/>; if already open for that same owner, closes it;
     /// if open for a different owner, switches context (and refreshes the list) without closing.
