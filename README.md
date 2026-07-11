@@ -24,7 +24,10 @@ modding API.
   selectable item. Mouse and clicks still work in parallel.
 - **HUD blips**: detected resources appear on your HUD through the game's own scanner-room blip
   system — you need the **Scanner Room HUD Chip** equipped to see them, exactly like a scanner
-  room. No holographic map; scan range is 300m around the sub.
+  room. No holographic map; scan range is 300m around the sub. While actively scanning, the blip
+  list refreshes every **2 seconds** (vanilla scanner rooms only refresh every 10s on their own
+  timer; this mod forces a tighter cadence so blips keep up as the Cyclops moves) — resources
+  that fall out of range are cleared on the same cadence.
 - **Power**: drains a flat **12 energy per minute** from the Cyclops while actively scanning
   (1%/min of a standard 6x Power Cell loadout — deliberately not scaled by ion/upgraded cells).
   When the sub runs dry, scanning pauses and auto-resumes once power recovers. No drain in

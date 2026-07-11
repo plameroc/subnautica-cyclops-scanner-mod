@@ -17,6 +17,7 @@ public class CyclopsScannerController : MonoBehaviour
     public const float ScanRange = 300f;
     public const float DrainPerMinute = 12f; // flat 12 energy/min — intentionally NOT scaled by max power
     private const float ResumePowerThreshold = 12f; // one minute's worth; hysteresis so it doesn't flicker
+    private const float BlipRefreshInterval = 2f; // vanilla's own cadence is 10s; we force it tighter while scanning
 
     // Interaction-box placement in Cyclops-local space: engine room, on the wall opposite the
     // upgrade console (aimed at the small yellow triangle). Captured in game.
@@ -25,6 +26,7 @@ public class CyclopsScannerController : MonoBehaviour
 
     private SubRoot _sub;
     private PrefabIdentifier _prefabId;
+    private float _blipRefreshTimer;
     private static uGUI_ResourceTracker _tracker; // cached lazily
 
     public SubRoot Sub => _sub;
@@ -112,7 +114,24 @@ public class CyclopsScannerController : MonoBehaviour
             }
         }
 
-        // 3. Power drain.
+        // 3a. Periodic HUD blip refresh while actively scanning. Vanilla only re-gathers every
+        // 10s on its own timer, which reads as sluggish when the sub is moving (new resources
+        // slow to appear, out-of-range ones slow to clear) — force it tighter while operational.
+        if (IsOperational)
+        {
+            _blipRefreshTimer += Time.deltaTime;
+            if (_blipRefreshTimer >= BlipRefreshInterval)
+            {
+                _blipRefreshTimer = 0f;
+                ForceBlipRefresh();
+            }
+        }
+        else
+        {
+            _blipRefreshTimer = 0f;
+        }
+
+        // 3b. Power drain.
         if (ModuleInstalled && ScanActive && SelectedType != TechType.None
             && _sub.live != null && _sub.live.IsAlive())
         {
@@ -145,6 +164,7 @@ public class CyclopsScannerController : MonoBehaviour
         SelectedType = techType;
         ScanActive = techType != TechType.None;
         PowerPaused = false;
+        _blipRefreshTimer = 0f;
         ForceBlipRefresh();
     }
 
