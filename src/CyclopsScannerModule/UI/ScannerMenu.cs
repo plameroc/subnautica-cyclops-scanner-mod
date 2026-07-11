@@ -30,6 +30,7 @@ public class ScannerMenu : MonoBehaviour
     private readonly List<(TechType Type, string Name)> _entries = new();
     private float _refreshTimer;
     private int _focusIndex;
+    private bool _stickEngaged; // left-stick flick edge-detect: one move per push, must recenter to repeat
 
     private bool IsOpen => _owner != null;
 
@@ -133,8 +134,25 @@ public class ScannerMenu : MonoBehaviour
         _focusIndex = Mathf.Clamp(_focusIndex, 0, count - 1); // list size may have changed on refresh
 
         var pad = Gamepad.current;
-        bool navDown = Input.GetKeyDown(KeyCode.DownArrow) || (pad != null && pad.dpad.down.wasPressedThisFrame);
-        bool navUp = Input.GetKeyDown(KeyCode.UpArrow) || (pad != null && pad.dpad.up.wasPressedThisFrame);
+
+        // Left stick as an alternative to the d-pad: treat a push past the engage threshold as one
+        // discrete move, and require the stick to return near center before it moves again (so it
+        // doesn't fly through the list). Up on the stick moves the highlight up.
+        const float StickEngage = 0.6f;
+        const float StickRelease = 0.35f;
+        float stickY = pad != null ? pad.leftStick.ReadValue().y : 0f;
+        bool stickUp = false, stickDown = false;
+        if (Mathf.Abs(stickY) < StickRelease)
+            _stickEngaged = false;
+        else if (!_stickEngaged && Mathf.Abs(stickY) >= StickEngage)
+        {
+            _stickEngaged = true;
+            stickUp = stickY > 0f;
+            stickDown = stickY < 0f;
+        }
+
+        bool navDown = Input.GetKeyDown(KeyCode.DownArrow) || stickDown || (pad != null && pad.dpad.down.wasPressedThisFrame);
+        bool navUp = Input.GetKeyDown(KeyCode.UpArrow) || stickUp || (pad != null && pad.dpad.up.wasPressedThisFrame);
         bool submit = Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)
             || (pad != null && pad.buttonSouth.wasPressedThisFrame);
 

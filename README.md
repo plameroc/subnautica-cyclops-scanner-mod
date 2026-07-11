@@ -19,9 +19,9 @@ modding API.
   - Look at the wall panel **opposite the upgrade console** in the engine room (aimed at the small
     yellow triangle) and press the interact button — controller / Steam Deck friendly, no keybind
     needed.
-- **Controller & Steam Deck support**: the menu is fully navigable without a mouse — d-pad or arrow
-  keys move the highlight, A / <kbd>Enter</kbd> selects, and "Close" is a selectable item. Mouse
-  and clicks still work in parallel.
+- **Controller & Steam Deck support**: the menu is fully navigable without a mouse — the d-pad,
+  left stick, or arrow keys move the highlight, A / <kbd>Enter</kbd> selects, and "Close" is a
+  selectable item. Mouse and clicks still work in parallel.
 - **HUD blips**: detected resources appear on your HUD through the game's own scanner-room blip
   system — you need the **Scanner Room HUD Chip** equipped to see them, exactly like a scanner
   room. No holographic map; scan range is 300m around the sub.
