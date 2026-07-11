@@ -52,7 +52,9 @@ public class CyclopsScannerController : MonoBehaviour
         _handTarget.transform.SetParent(transform, false);
         _handTarget.transform.localPosition = InteractLocalPosition;
         _handTarget.transform.localRotation = Quaternion.identity;
-        _handTarget.layer = 0; // Default layer — detected by the reticle raycast mask (~Trigger,~OnlyVehicle)
+        // Targeting.Filter accepts a TRIGGER collider ONLY when it's on the Useable layer
+        // (a trigger on any other layer is silently discarded). This is the standard interactable setup.
+        _handTarget.layer = LayerID.Useable;
         var box = _handTarget.AddComponent<BoxCollider>();
         box.isTrigger = true; // trigger => doesn't block player movement, still hit by reticle (QueryTriggerInteraction.Collide)
         box.size = InteractBoxSize;

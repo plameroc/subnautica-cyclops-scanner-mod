@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using CyclopsScannerModule.Behaviours;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace CyclopsScannerModule.UI;
 
@@ -122,19 +123,27 @@ public class ScannerMenu : MonoBehaviour
             RefreshList();
         }
 
-        // Controller/keyboard focus navigation. UIUp/UIDown/UISubmit are bound to both keyboard
-        // (arrows/enter) and gamepad (d-pad/A) by the game, so this works on a Steam Deck with no
-        // configuration. "Close" is a focusable item, so we never use UICancel (which can also open
-        // the pause menu). The mouse path in DrawWindow keeps working independently.
+        // Controller/keyboard focus navigation. We read raw keyboard + gamepad inputs directly
+        // instead of GameInput UI actions: the game binds UISubmit to the primary interact/click,
+        // so using it both misses the Enter key AND re-fires on every mouse click (which would
+        // re-activate the highlighted row when you click "Close"). "Close" is a focusable item, so
+        // we never use UICancel (which can also open the pause menu). The mouse path in DrawWindow
+        // keeps working independently.
         int count = FocusableCount;
         _focusIndex = Mathf.Clamp(_focusIndex, 0, count - 1); // list size may have changed on refresh
 
-        if (GameInput.GetButtonDown(GameInput.Button.UIDown))
+        var pad = Gamepad.current;
+        bool navDown = Input.GetKeyDown(KeyCode.DownArrow) || (pad != null && pad.dpad.down.wasPressedThisFrame);
+        bool navUp = Input.GetKeyDown(KeyCode.UpArrow) || (pad != null && pad.dpad.up.wasPressedThisFrame);
+        bool submit = Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)
+            || (pad != null && pad.buttonSouth.wasPressedThisFrame);
+
+        if (navDown)
             _focusIndex = (_focusIndex + 1) % count;
-        else if (GameInput.GetButtonDown(GameInput.Button.UIUp))
+        else if (navUp)
             _focusIndex = (_focusIndex - 1 + count) % count;
 
-        if (GameInput.GetButtonDown(GameInput.Button.UISubmit))
+        if (submit)
         {
             ActivateFocused();
             return; // ActivateFocused may have called Close()
