@@ -261,12 +261,11 @@ public class ScannerMenu : MonoBehaviour
             GUILayout.EndScrollView();
         }
 
-        GUILayout.BeginHorizontal();
+        // Full-width, stacked (not side-by-side) so navigation reads consistently as up/down.
         if (FocusButton("Stop scanning", _entries.Count))
             _owner.StopScanning();
         if (FocusButton("Close", _entries.Count + 1))
             Close();
-        GUILayout.EndHorizontal();
 
         GUI.DragWindow();
     }
