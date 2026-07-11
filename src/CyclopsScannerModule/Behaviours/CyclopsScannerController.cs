@@ -18,7 +18,8 @@ public class CyclopsScannerController : MonoBehaviour
     public const float DrainPerMinute = 12f; // flat 12 energy/min — intentionally NOT scaled by max power
     private const float ResumePowerThreshold = 12f; // one minute's worth; hysteresis so it doesn't flicker
 
-    // Interaction-box placement in Cyclops-local space (helm area, starboard), captured in game.
+    // Interaction-box placement in Cyclops-local space: engine room, on the wall opposite the
+    // upgrade console (aimed at the small yellow rectangle). Captured in game.
     private static readonly Vector3 InteractLocalPosition = new Vector3(2.385f, 1.059f, 6.593f);
     private static readonly Vector3 InteractBoxSize = new Vector3(0.6f, 0.6f, 0.4f);
 
