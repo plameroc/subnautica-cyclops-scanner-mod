@@ -36,7 +36,9 @@ modding API.
 
 1. Install [BepInEx for Subnautica](https://github.com/toebeann/BepInEx.Subnautica) and
    [Nautilus](https://github.com/SubnauticaModding/Nautilus/releases) (see runtime note below).
-2. Drop `CyclopsScannerModule.dll` into `Subnautica\BepInEx\plugins\CyclopsScannerModule\`.
+2. Download the latest `CyclopsScannerModule-*.zip` from the
+   [Releases page](../../releases/latest) and extract it into `Subnautica\BepInEx\plugins\`
+   (the zip is already laid out as `CyclopsScannerModule\CyclopsScannerModule.dll`).
 3. The menu key can be rebound in `BepInEx\config\com.plameroc.cyclopsscannermodule.cfg`
    (created after first launch).
 

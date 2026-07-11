@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build (e.g. 1.0.0). Only used for manual runs; no release is created."
+        required: false
+        default: "0.0.0"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Determine version
+        id: version
+        run: |
+          if ("${{ github.ref_type }}" -eq "tag") {
+            $version = "${{ github.ref_name }}".TrimStart('v')
+          } else {
+            $version = "${{ github.event.inputs.version }}"
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Build
+        run: dotnet build src/CyclopsScannerModule/CyclopsScannerModule.csproj -c Release -p:Version=${{ steps.version.outputs.version }}
+
+      - name: Package
+        run: |
+          $stagingDir = "staging/CyclopsScannerModule"
+          New-Item -ItemType Directory -Path $stagingDir -Force | Out-Null
+          Copy-Item "src/CyclopsScannerModule/bin/Release/net472/CyclopsScannerModule.dll" -Destination $stagingDir
+          Compress-Archive -Path $stagingDir -DestinationPath "CyclopsScannerModule-${{ steps.version.outputs.version }}.zip"
+
+      - name: Create GitHub Release
+        if: github.ref_type == 'tag'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create ${{ github.ref_name }} "CyclopsScannerModule-${{ steps.version.outputs.version }}.zip" --title "${{ github.ref_name }}" --generate-notes
